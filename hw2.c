@@ -1,7 +1,10 @@
 // TODO
-// Create Note Struct
-// Learn dynamic Memory Allocation
-// https://www.programiz.com/c-programming/c-dynamic-memory-allocation
+// implement a stack for storing args
+// AND method
+// OR method
+// NOT method
+// ALterList holds notes
+// write a method that copies one linked list to another
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,8 +29,26 @@ struct tag
     struct tag *next;
 };
 
-struct note *noteList;    //holds all notes
-struct tag *totalTagList; //holds all tags that are created
+/**
+ * Type for individual stack entry
+ */
+struct stack_entry
+{
+    char *data;
+    struct stack_entry *next;
+};
+
+/**
+ * Type for stack instance
+ */
+struct stack_t
+{
+    struct stack_entry *head;
+    size_t stackSize; // not strictly necessary, but
+                      // useful for logging
+};
+
+struct note *noteList; //holds all notes
 
 void add(); // This command is used to add a new note to the system.
 // Each note is composed of at least one line of text can be at most 500
@@ -69,6 +90,21 @@ void processCommand(); // Takes command line as an input and calls for needed fu
 void printNoteList();
 void sortedInsert();
 void insertToTagList();
+void printTagList();
+int isContainsTag();
+
+// Stack functions
+struct stack_t *newStack(void);
+char *copyString();
+void push();
+void pop();
+void clear();
+void destroyStack();
+char *top();
+
+////////////////////////////////////////////////////////////////////////////////////
+// MAIN
+////////////////////////////////////////////////////////////////////////////////////
 
 int main(int argc, char *argv[])
 {
@@ -87,7 +123,7 @@ int main(int argc, char *argv[])
         }
 
         processCommand(input);
-        /* printf("------------------------\n");
+        /*  printf("------------------------\n");
         printNoteList(noteList);
         printf("------------------------\n"); */
 
@@ -97,6 +133,10 @@ int main(int argc, char *argv[])
 
     return 0;
 }
+
+////////////////////////////////////////////////////////////////////////////////////
+// HELPER FUNCTIONS
+////////////////////////////////////////////////////////////////////////////////////
 
 void processCommand(char *input)
 {
@@ -120,6 +160,7 @@ void processCommand(char *input)
         new_note->id = atoi(commandArgs[1]);
 
         char *content = malloc(sizeof(char) * MAX_NOTE_LENGTH);
+
         char input[MAX_LINE_LENGTH];
 
         fgets(input, sizeof(input), stdin);
@@ -144,16 +185,11 @@ void processCommand(char *input)
     else if (strcmp(commandArgs[0], "TAG") == 0)
     {
 
-        char *tag = commandArgs[1];
         struct tag *new_tag_note = malloc(sizeof(struct tag));
-        struct tag *new_tag_tagList = malloc(sizeof(struct tag));
+        new_tag_note->name = malloc(sizeof(char) * MAX_TAG_LENGTH);
 
-        new_tag_note->name = tag;
-        new_tag_tagList->name = tag;
+        strcpy(new_tag_note->name, commandArgs[1]);
         new_tag_note->next = NULL;
-        new_tag_tagList->next = NULL;
-
-        insertToTagList(&totalTagList,new_tag_tagList);
 
         struct note *iterNote;
 
@@ -163,7 +199,7 @@ void processCommand(char *input)
             {
                 if (iterNote->id == atoi(commandArgs[i]))
                 {
-                    insertToTagList(&(iterNote->tagList),tag); //insert new tag into tag list of the note
+                    insertToTagList(&(iterNote->tagList), new_tag_note); //insert new tag into tag list of the note
                     break;
                 }
             }
@@ -188,16 +224,66 @@ void processCommand(char *input)
 
     else if (strcmp(commandArgs[0], "FIND") == 0)
     {
-        int note_id = atoi(commandArgs[1]);
-        struct note *iter;
+        struct stack_t *theStack = newStack();
+        struct note *alterList = malloc(sizeof(struct node *));
+        char tempArr[strlen(input)][MAX_TAG_LENGTH];
 
-        for (iter = noteList; iter != NULL; iter = iter->next)
+        for (int i = 1; i < numberOfArgs - 1; i++)
         {
-            if (iter->id == note_id)
+            if (strcmp(commandArgs[i], ")") != 0)
             {
-                printf("Id: %d\n", iter->id);
-                printf("%s", iter->content);
-                break;
+                push(theStack, commandArgs[i]);
+                printf("%s pushed into stack \n", commandArgs[i]);
+            }
+            else
+            {
+                int numTags = 0;
+                char str[MAX_TAG_LENGTH];
+                strcpy(str,top(theStack));
+                //str = top(theStack);
+                printf("str = %s\n",str);
+
+                printf("sa");
+                printf("%d",strcmp(str,"AND("));
+
+                while (strcmp(str, "AND(") != 0 && strcmp(str, "NOT(") != 0 && strcmp(str, "OR(") != 0)
+                {
+                    printf("geldim");
+                    strcpy(tempArr[numTags++], str);
+                    pop(theStack);
+                }
+
+                if (strcmp(str, "AND(") == 0)
+                {
+                    //AND METHOD CALL
+                    printf("AND\n");
+                    for (int i = 0; i < numTags; i++)
+                    {
+                        printf("---%s\n", tempArr[i]);
+                    }
+                }
+
+                else if (strcmp(str, "NOT(") == 0)
+                {
+                    //NOT METHOD CALL
+                    printf("NOT\n");
+                    for (int i = 0; i < numTags; i++)
+                    {
+                        printf("---%s\n", tempArr[i]);
+                    }
+                }
+
+                else if (strcmp(str, "OR(") == 0)
+                {
+                    //OR METHOD CALL
+                    printf("OR\n");
+                    for (int i = 0; i < numTags; i++)
+                    {
+                        printf("---%s\n", tempArr[i]);
+                    }
+                }
+
+                pop(theStack);
             }
         }
     }
@@ -209,10 +295,30 @@ void printNoteList(struct note *noteList)
     while (temp != NULL)
     {
         printf("ID: %d  \n", temp->id);
-        //printf("TAG: %s  \n", temp->tag);
-        printf("%s", temp->content);
+        printTagList(temp->tagList);
+        printf("Content:");
+        printf("\n%s", temp->content);
         temp = temp->next;
     }
+}
+
+void printTagList(struct tag *tagList)
+{
+
+    struct tag *temp = tagList;
+
+    if (temp == NULL)
+    {
+        return;
+    }
+
+    printf("TAGS:");
+    while (temp != NULL)
+    {
+        printf("%s---", temp->name);
+        temp = temp->next;
+    }
+    printf("\n");
 }
 
 void sortedInsert(struct note **head_ref, struct note *new_note)
@@ -269,4 +375,121 @@ void insertToTagList(struct tag **head_ref, struct tag *new_tag)
 
     last->next = new_tag;
     return;
+}
+
+int isContainsTag(struct note *note, char *tag_name)
+{
+    //check whether given tag is in note's tag list
+
+    int isContains = 0;
+
+    struct tag *iter;
+
+    for (iter = note->tagList; iter != NULL; iter = iter->next)
+    {
+        if (strcmp(iter->name, tag_name) == 0)
+        {
+            isContains = 1;
+            break;
+        }
+    }
+
+    return isContains;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// Stack Operators
+// Taken from : https://stackoverflow.com/questions/1919975/creating-a-stack-of-strings-in-c
+////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Create a new stack instance
+ */
+struct stack_t *newStack(void)
+{
+    struct stack_t *stack = malloc(sizeof *stack);
+    if (stack)
+    {
+        stack->head = NULL;
+        stack->stackSize = 0;
+    }
+    return stack;
+}
+
+/**
+ * Make a copy of the string to be stored (assumes  
+ * strdup() or similar functionality is not
+ * available
+ */
+char *copyString(char *str)
+{
+    char *tmp = malloc(strlen(str) + 1);
+    if (tmp)
+        strcpy(tmp, str);
+    return tmp;
+}
+
+/**
+ * Push a value onto the stack
+ */
+void push(struct stack_t *theStack, char *value)
+{
+    struct stack_entry *entry = malloc(sizeof *entry);
+    if (entry)
+    {
+        entry->data = copyString(value);
+        entry->next = theStack->head;
+        theStack->head = entry;
+        theStack->stackSize++;
+    }
+    else
+    {
+        // handle error here
+    }
+}
+
+/**
+ * Get the value at the top of the stack
+ */
+char *top(struct stack_t *theStack)
+{
+    if (theStack && theStack->head)
+        return theStack->head->data;
+    else
+        return NULL;
+}
+
+/**
+ * Pop the top element from the stack; this deletes both 
+ * the stack entry and the string it points to
+ */
+void pop(struct stack_t *theStack)
+{
+    if (theStack->head != NULL)
+    {
+        struct stack_entry *tmp = theStack->head;
+        theStack->head = theStack->head->next;
+        free(tmp->data);
+        free(tmp);
+        theStack->stackSize--;
+    }
+}
+
+/**
+ * Clear all elements from the stack
+ */
+void clear(struct stack_t *theStack)
+{
+    while (theStack->head != NULL)
+        pop(theStack);
+}
+
+/**
+ * Destroy a stack instance
+ */
+void destroyStack(struct stack_t **theStack)
+{
+    clear(*theStack);
+    free(*theStack);
+    *theStack = NULL;
 }
