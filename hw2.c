@@ -50,7 +50,7 @@ struct stack_t
 
 struct note *noteList; //holds all notes
 
-void add(); // This command is used to add a new note to the system.
+// ADD // This command is used to add a new note to the system.
 // Each note is composed of at least one line of text can be at most 500
 // characters, but a note may have as many lines of text as the user wants
 
@@ -58,19 +58,19 @@ void add(); // This command is used to add a new note to the system.
 // { note content }
 // END
 
-void tag(); // This command is used to tag one or more notes.
+// TAG // This command is used to tag one or more notes.
 // Tags are names that are composed of at most 100 alphanumeric characters
 // (spaces, symbols like parenthesis, mathematical operators, or punctuation
 // marks are not allowed).
 
 // TAG <tag_name> <note_id1> <note_id2> ... -1
 
-void display(); // This command is used to display contents of a note.
+// DISPLAY // This command is used to display contents of a note.
 //Output should start with the line "Id: <note_id>"" and than it's content
 
 // DISPLAY <note_id>
 
-void find(); // This command is used to find notes according to a tag expression.
+// FIND // This command is used to find notes according to a tag expression.
 // Tag expressions are of the form and(t1 ... tn), or(t1 ... tn), and not(t1).
 // The system must display the results of a FIND command sorted by the note id in
 // ascending order.
@@ -85,6 +85,11 @@ void find(); // This command is used to find notes according to a tag expression
 
 // FIND AND( funny NOT( work ) ) ⇒ the system must find all notes that are tagged
 //as ‘funny’ but not ‘work’.
+
+// Functions that are FIND
+void not();
+void and();
+void or();
 
 void processCommand(); // Takes command line as an input and calls for needed functions
 void printNoteList();
@@ -227,30 +232,35 @@ void processCommand(char *input)
         struct stack_t *theStack = newStack();
         struct note *alterList = malloc(sizeof(struct node *));
         char tempArr[strlen(input)][MAX_TAG_LENGTH];
+        //int isFirstRun = 0;
 
-        for (int i = 1; i < numberOfArgs - 1; i++)
+        for (int i = 1; i < numberOfArgs ; i++)
         {
+
             if (strcmp(commandArgs[i], ")") != 0)
             {
+
                 push(theStack, commandArgs[i]);
                 printf("%s pushed into stack \n", commandArgs[i]);
+                
             }
             else
             {
                 int numTags = 0;
-                char str[MAX_TAG_LENGTH];
-                strcpy(str,top(theStack));
-                //str = top(theStack);
-                printf("str = %s\n",str);
+                char *str = malloc(sizeof(char) * MAX_TAG_LENGTH);
 
-                printf("sa");
-                printf("%d",strcmp(str,"AND("));
+                str = top(theStack);
+                printf("str = %s\n", str);
 
                 while (strcmp(str, "AND(") != 0 && strcmp(str, "NOT(") != 0 && strcmp(str, "OR(") != 0)
                 {
-                    printf("geldim");
+                    printf("geldim\n");
                     strcpy(tempArr[numTags++], str);
                     pop(theStack);
+
+                    str = top(theStack);
+                    printf("sa");
+                    printf("str = %s\n", str);
                 }
 
                 if (strcmp(str, "AND(") == 0)
@@ -407,7 +417,7 @@ int isContainsTag(struct note *note, char *tag_name)
  */
 struct stack_t *newStack(void)
 {
-    struct stack_t *stack = malloc(sizeof *stack);
+    struct stack_t *stack = malloc(sizeof(*stack));
     if (stack)
     {
         stack->head = NULL;
@@ -434,17 +444,13 @@ char *copyString(char *str)
  */
 void push(struct stack_t *theStack, char *value)
 {
-    struct stack_entry *entry = malloc(sizeof *entry);
+    struct stack_entry *entry = malloc(sizeof(*entry));
     if (entry)
     {
         entry->data = copyString(value);
         entry->next = theStack->head;
         theStack->head = entry;
         theStack->stackSize++;
-    }
-    else
-    {
-        // handle error here
     }
 }
 
