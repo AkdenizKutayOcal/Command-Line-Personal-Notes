@@ -1,10 +1,9 @@
 // TODO
-// implement a stack for storing args
 // AND method
 // OR method
 // NOT method
-// ALterList holds notes
-// write a method that copies one linked list to another
+// intersect method
+// union method
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -49,6 +48,7 @@ struct stack_t
 };
 
 struct note *noteList; //holds all notes
+int numberOfLists;
 
 // ADD // This command is used to add a new note to the system.
 // Each note is composed of at least one line of text can be at most 500
@@ -87,9 +87,12 @@ struct note *noteList; //holds all notes
 //as ‘funny’ but not ‘work’.
 
 // Functions that are FIND
-void not();
-void and ();
-void or ();
+struct note * not();
+struct note * and ();
+struct note * or ();
+struct note * intersect();
+struct note * unionOf();
+
 
 void processCommand(); // Takes command line as an input and calls for needed functions
 void printNoteList();
@@ -233,10 +236,11 @@ void processCommand(char *input)
 
     else if (strcmp(commandArgs[0], "FIND") == 0)
     {
+
         struct stack_t *theStack = newStack();
-        struct note *alterList = malloc(sizeof(struct node *));
-        char tempArr[strlen(input)][MAX_TAG_LENGTH];
-        //int isFirstRun = 0;
+        struct note *alterList[50];
+        char *tempArr[50];
+        numberOfLists = 0;
 
         for (int i = 1; i < numberOfArgs; i++)
         {
@@ -258,6 +262,8 @@ void processCommand(char *input)
                 while (strcmp(str, "AND(") != 0 && strcmp(str, "NOT(") != 0 && strcmp(str, "OR(") != 0)
                 {
                     printf("geldim\n");
+
+                    tempArr[numTags] = malloc(sizeof(char) * MAX_TAG_LENGTH);
                     strcpy(tempArr[numTags++], str);
                     pop(theStack);
 
@@ -270,20 +276,19 @@ void processCommand(char *input)
                 {
                     //AND METHOD CALL
                     printf("AND\n");
-                    for (int i = 0; i < numTags; i++)
-                    {
-                        printf("---%s\n", tempArr[i]);
-                    }
+                    struct note *list = and(&noteList, alterList, tempArr, numTags);
+                    alterList[numberOfLists - 1] = list;
+                    printNoteList(alterList[numberOfLists - 1]);
                 }
 
                 else if (strcmp(str, "NOT(") == 0)
                 {
                     //NOT METHOD CALL
                     printf("NOT\n");
-                    for (int i = 0; i < numTags; i++)
-                    {
-                        printf("---%s\n", tempArr[i]);
-                    }
+
+                    struct note *list = not(&noteList, alterList, tempArr, numTags);
+                    alterList[numberOfLists - 1] = list;
+                    printNoteList(alterList[numberOfLists - 1]);
                 }
 
                 else if (strcmp(str, "OR(") == 0)
@@ -297,11 +302,185 @@ void processCommand(char *input)
                 }
 
                 pop(theStack);
+                push(theStack, "nested");
             }
         }
     }
 }
 
+struct note * and (struct note * *noteList, struct note *alterList[], char *tempArray[], int numberOfTags)
+{
+
+    printf("--------------------------------\n");
+
+    struct note *andList = NULL;
+
+    for (int i = 0; i < numberOfTags; i++)
+    {
+
+        if (strcmp(tempArray[i], "nested") == 0)
+        {
+            if (andList == NULL)
+            {
+                andList = alterList[numberOfLists - 1];
+            }
+
+            else
+            {
+
+                //intersect(andList,alterList[numberOfLists-1])
+            }
+        }
+
+        else
+        {
+            if (andList == NULL)
+            {
+                struct note *iter_note;
+
+                for (iter_note = *noteList; iter_note != NULL; iter_note = iter_note->next)
+                {
+                    printf("id: %d %d\n", iter_note->id, isContainsTag(iter_note, tempArray[0]));
+
+                    if (isContainsTag(iter_note, tempArray[0]) == 1)
+                    {
+                        struct note *new_note = malloc(sizeof(struct note));
+
+                        new_note->content = iter_note->content;
+                        new_note->id = iter_note->id;
+                        new_note->next = NULL;
+
+                        printf("\n%s", new_note->content);
+
+                        sortedInsert(&andList, new_note);
+                    }
+                }
+                numberOfLists++;
+            }
+
+            else
+            {
+                //intersect(andList,list of notes with tag)
+            }
+        }
+    }
+    printf("--------------------------------\n");
+    return andList;
+}
+
+struct note * not(struct note * *noteList, struct note *alterList[], char *tempArray[], int numberOfTags)
+{
+    struct note *notList = NULL;
+
+    if (strcmp(tempArray[0], "nested") == 0)
+    {
+        //do nested operation
+        struct note *iter_noteList;
+
+        for (iter_noteList = *noteList; iter_noteList != NULL; iter_noteList = iter_noteList->next)
+        {
+            struct note *iter_alterList = alterList[numberOfLists - 1];
+            int isOkay = 1;
+
+            for (iter_alterList; iter_alterList != NULL; iter_alterList = iter_alterList->next)
+            {
+                if (iter_noteList->id == iter_alterList->id)
+                {
+                    isOkay = 0;
+                    break;
+                }
+            }
+
+            if (isOkay == 1)
+            {
+                struct note *new_note = malloc(sizeof(struct note));
+
+                new_note->content = iter_noteList->content;
+                new_note->id = iter_noteList->id;
+                new_note->next = NULL;
+
+                printf("\n%s", new_note->content);
+
+                sortedInsert(&notList, new_note);
+            }
+        }
+
+        printf("========================================");
+
+        return notList;
+    }
+
+    else
+    {
+        struct note *iter_note;
+
+        for (iter_note = *noteList; iter_note != NULL; iter_note = iter_note->next)
+        {
+            printf("id: %d %d\n", iter_note->id, isContainsTag(iter_note, tempArray[0]));
+
+            if (isContainsTag(iter_note, tempArray[0]) == 0)
+            {
+                struct note *new_note = malloc(sizeof(struct note));
+
+                new_note->content = iter_note->content;
+                new_note->id = iter_note->id;
+                new_note->next = NULL;
+
+                printf("\n%s", new_note->content);
+
+                sortedInsert(&notList, new_note);
+            }
+        }
+        printf("========================================");
+
+        numberOfLists++;
+        return notList;
+    }
+}
+
+struct note * or (struct note * *noteList, struct note *alterList[], char *tempArray[], int numberOfTags)
+{
+    struct note *orList = NULL;
+
+    for (int i = 0; i < numberOfTags; i++)
+    {
+        if (strcmp(tempArray[i], "nested") == 0)
+        {
+            //union(orList,alterList[numberOfList-1])
+        }
+
+        else
+        {
+            struct note *notesWithTag = NULL;
+
+            //findNotes that has tag
+            //sortedInsert(notesWithTag)
+            //union(notesWithTag,orList)
+
+        }
+    }
+}
+
+struct note * intersect(struct note** noteList1, struct note** noteList2){
+    // Take two note lists and find a resulting list that contains 
+    // notes that are in both lists.
+
+    struct note* intersectList = NULL;
+}
+
+struct note * unionOf(struct note** noteList1, struct note** noteList2){
+    // Take two note lists and find a resulting list that union of all notes
+
+    struct note* unionList = NULL;
+    
+}
+
+void displaySingleLine(struct note *a_note)
+{
+    for (int i = 0; i < strlen(a_note->content); i++)
+    {
+    }
+}
 void printNoteList(struct note *noteList)
 {
     struct note *temp = noteList;
@@ -317,7 +496,6 @@ void printNoteList(struct note *noteList)
 
 void printTagList(struct tag *tagList)
 {
-
     struct tag *temp = tagList;
 
     if (temp == NULL)
@@ -343,6 +521,7 @@ void sortedInsert(struct note **head_ref, struct note *new_note)
 
     if (*head_ref == NULL || (*head_ref)->id > new_note->id)
     {
+
         new_note->next = *head_ref;
         *head_ref = new_note;
     }
@@ -361,6 +540,22 @@ void sortedInsert(struct note **head_ref, struct note *new_note)
         new_note->next = current->next;
         current->next = new_note;
     }
+}
+void deleteNote(struct note **head_ref, struct note *note)
+{
+    struct note *temp = *head_ref;
+
+    while (temp->next->id != note->id)
+    {
+        if (temp->next == NULL)
+        {
+            printf("NO such note in the list");
+            return;
+        }
+        temp = temp->next;
+    }
+    temp->next = note->next;
+    free(note);
 }
 
 void insertToTagList(struct tag **head_ref, struct tag *new_tag)

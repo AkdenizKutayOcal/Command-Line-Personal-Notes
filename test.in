@@ -16,9 +16,12 @@ ADD 20
 END
 TAG todo 20 -1
 TAG urgent 3 -1
-FIND AND( work )
+FIND AND( NOT( todo ) )
+
+FIND AND( work fun other )
 DISPLAY 3
-FIND AND( NOT( work ) fun )
+FIND AND( NOT( work ) OR( TODO fun ) )
+
 ADD 40
 Problems with pointers
 ----------------------
