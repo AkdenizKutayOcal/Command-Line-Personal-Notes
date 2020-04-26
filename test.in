@@ -1,0 +1,43 @@
+ADD 3
+Things todo for the 326 Hw !
+ * review dynamic memory allocation
+ * define the structs
+END
+TAG work 3 -1
+TAG todo 3 -1
+ADD 10
+Don't you know about the bird?
+Everybody's heard about the bird.
+END
+TAG fun 10 -1
+ADD 20
+*** Play with Lola & Luka ***
+          :)
+END
+TAG todo 20 -1
+TAG urgent 3 -1
+FIND AND( work )
+DISPLAY 3
+FIND AND( NOT( work ) fun )
+ADD 40
+Problems with pointers
+----------------------
+1. dangling pointers
+2. memory leaks 
+END
+TAG pointer 40 -1
+TAG 426 40 -1
+TAG work 40 -1
+TAG new 20 40 -1
+FIND NOT( OR( todo urgent ) )
+ADD 50
+Flight details: ESB-TXL
+END
+TAG flight 50 -1
+TAG work 50 -1
+ADD 60
+Vacation: Azores 
+* Flight: ESB-LIS
+END
+TAG flight 60 -1
+FIND AND( flight NOT( work ) )

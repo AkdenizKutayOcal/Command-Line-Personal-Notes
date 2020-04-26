@@ -88,8 +88,8 @@ struct note *noteList; //holds all notes
 
 // Functions that are FIND
 void not();
-void and();
-void or();
+void and ();
+void or ();
 
 void processCommand(); // Takes command line as an input and calls for needed functions
 void printNoteList();
@@ -107,15 +107,18 @@ void clear();
 void destroyStack();
 char *top();
 
+FILE *fp;
+
 ////////////////////////////////////////////////////////////////////////////////////
 // MAIN
 ////////////////////////////////////////////////////////////////////////////////////
 
 int main(int argc, char *argv[])
 {
-
+    fp = fopen("test.in", "r");
     char input[MAX_LINE_LENGTH];
-    fgets(input, sizeof(input), stdin);
+    //fgets(input, sizeof(input), stdin);
+    fgets(input, sizeof(input), fp);
     input[strlen(input) - 1] = 0;
     noteList = NULL;
 
@@ -132,10 +135,11 @@ int main(int argc, char *argv[])
         printNoteList(noteList);
         printf("------------------------\n"); */
 
-        fgets(input, sizeof(input), stdin);
+        fgets(input, sizeof(input), fp);
         input[strlen(input) - 1] = 0;
     }
 
+    fclose(fp);
     return 0;
 }
 
@@ -168,7 +172,7 @@ void processCommand(char *input)
 
         char input[MAX_LINE_LENGTH];
 
-        fgets(input, sizeof(input), stdin);
+        fgets(input, sizeof(input), fp);
         input[strlen(input) - 1] = 0;
 
         while (strcmp(input, "END") != 0)
@@ -177,7 +181,7 @@ void processCommand(char *input)
             //printf("----%s----\n",content);
             strcat(content, "\n");
 
-            fgets(input, sizeof(input), stdin);
+            fgets(input, sizeof(input), fp);
             input[strlen(input) - 1] = 0;
         }
 
@@ -234,7 +238,7 @@ void processCommand(char *input)
         char tempArr[strlen(input)][MAX_TAG_LENGTH];
         //int isFirstRun = 0;
 
-        for (int i = 1; i < numberOfArgs ; i++)
+        for (int i = 1; i < numberOfArgs; i++)
         {
 
             if (strcmp(commandArgs[i], ")") != 0)
@@ -242,7 +246,6 @@ void processCommand(char *input)
 
                 push(theStack, commandArgs[i]);
                 printf("%s pushed into stack \n", commandArgs[i]);
-                
             }
             else
             {
