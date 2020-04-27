@@ -90,9 +90,8 @@ int numberOfLists;
 struct note * not();
 struct note * and ();
 struct note * or ();
-struct note * intersect();
-struct note * unionOf();
-
+struct note *intersect();
+struct note *unionOf();
 
 void processCommand(); // Takes command line as an input and calls for needed functions
 void printNoteList();
@@ -100,6 +99,7 @@ void sortedInsert();
 void insertToTagList();
 void printTagList();
 int isContainsTag();
+int isContainsNote();
 
 // Stack functions
 struct stack_t *newStack(void);
@@ -295,10 +295,10 @@ void processCommand(char *input)
                 {
                     //OR METHOD CALL
                     printf("OR\n");
-                    for (int i = 0; i < numTags; i++)
-                    {
-                        printf("---%s\n", tempArr[i]);
-                    }
+                    printf("NUMBEROFLISTS %d\n", numberOfLists);
+                    struct note *list = or (&noteList, alterList, tempArr, numTags);
+                    alterList[numberOfLists - 1] = list;
+                    printNoteList(alterList[numberOfLists - 1]);
                 }
 
                 pop(theStack);
@@ -311,8 +311,6 @@ void processCommand(char *input)
 struct note * and (struct note * *noteList, struct note *alterList[], char *tempArray[], int numberOfTags)
 {
 
-    printf("--------------------------------\n");
-
     struct note *andList = NULL;
 
     for (int i = 0; i < numberOfTags; i++)
@@ -323,12 +321,13 @@ struct note * and (struct note * *noteList, struct note *alterList[], char *temp
             if (andList == NULL)
             {
                 andList = alterList[numberOfLists - 1];
+                numberOfLists--;
             }
 
             else
             {
-
-                //intersect(andList,alterList[numberOfLists-1])
+                andList = intersect(&andList,&alterList[numberOfLists-1]);
+                numberOfLists--;
             }
         }
 
@@ -340,7 +339,7 @@ struct note * and (struct note * *noteList, struct note *alterList[], char *temp
 
                 for (iter_note = *noteList; iter_note != NULL; iter_note = iter_note->next)
                 {
-                    printf("id: %d %d\n", iter_note->id, isContainsTag(iter_note, tempArray[0]));
+                    //printf("id: %d %d\n", iter_note->id, isContainsTag(iter_note, tempArray[0]));
 
                     if (isContainsTag(iter_note, tempArray[0]) == 1)
                     {
@@ -350,21 +349,43 @@ struct note * and (struct note * *noteList, struct note *alterList[], char *temp
                         new_note->id = iter_note->id;
                         new_note->next = NULL;
 
-                        printf("\n%s", new_note->content);
+                        //printf("\n%s", new_note->content);
 
                         sortedInsert(&andList, new_note);
                     }
                 }
-                numberOfLists++;
             }
 
             else
             {
-                //intersect(andList,list of notes with tag)
+                struct note *notesWithTag = NULL;
+
+                struct note *iter_note;
+
+                for (iter_note = *noteList; iter_note != NULL; iter_note = iter_note->next)
+                {
+                    //printf("id: %d %d\n", iter_note->id, isContainsTag(iter_note, tempArray[i]));
+
+                    if (isContainsTag(iter_note, tempArray[i]) == 1)
+                    {
+                        struct note *new_note = malloc(sizeof(struct note));
+
+                        new_note->content = iter_note->content;
+                        new_note->id = iter_note->id;
+                        new_note->next = NULL;
+
+                        //printf("\n%s", new_note->content);
+
+                        sortedInsert(&notesWithTag, new_note);
+                    }
+                }
+
+                andList = intersect(&andList,&notesWithTag);
             }
         }
     }
-    printf("--------------------------------\n");
+    //printf("--------------------------------\n");
+    numberOfLists++;
     return andList;
 }
 
@@ -446,33 +467,105 @@ struct note * or (struct note * *noteList, struct note *alterList[], char *tempA
     {
         if (strcmp(tempArray[i], "nested") == 0)
         {
-            //union(orList,alterList[numberOfList-1])
+            orList = unionOf(&orList, &alterList[numberOfLists - 1]);
+            numberOfLists--;
         }
 
         else
         {
             struct note *notesWithTag = NULL;
 
-            //findNotes that has tag
-            //sortedInsert(notesWithTag)
-            //union(notesWithTag,orList)
+            struct note *iter_note;
 
+            for (iter_note = *noteList; iter_note != NULL; iter_note = iter_note->next)
+            {
+                printf("id: %d %d\n", iter_note->id, isContainsTag(iter_note, tempArray[i]));
+
+                if (isContainsTag(iter_note, tempArray[i]) == 1)
+                {
+                    struct note *new_note = malloc(sizeof(struct note));
+
+                    new_note->content = iter_note->content;
+                    new_note->id = iter_note->id;
+                    new_note->next = NULL;
+
+                    printf("\n%s", new_note->content);
+
+                    sortedInsert(&notesWithTag, new_note);
+                }
+            }
+
+            orList = unionOf(&orList, &notesWithTag);
         }
     }
+    numberOfLists++;
+    return orList;
 }
 
-struct note * intersect(struct note** noteList1, struct note** noteList2){
-    // Take two note lists and find a resulting list that contains 
+struct note *intersect(struct note **noteList1, struct note **noteList2)
+{
+    // Take two note lists and find a resulting list that contains
     // notes that are in both lists.
 
-    struct note* intersectList = NULL;
+    struct note *intersectList = NULL;
+    struct note *note1 = *noteList1;
+
+    while (note1 != NULL)
+    {
+        if (isContainsNote(*noteList2, note1->id) == 1)
+        {
+            struct note *new_note = malloc(sizeof(struct note));
+
+            new_note->content = note1->content;
+            new_note->id = note1->id;
+            new_note->next = NULL;
+
+            sortedInsert(&intersectList, new_note);
+        }
+
+        note1 = note1->next;
+    }
+
+    return intersectList;
 }
 
-struct note * unionOf(struct note** noteList1, struct note** noteList2){
+struct note *unionOf(struct note **noteList1, struct note **noteList2)
+{
     // Take two note lists and find a resulting list that union of all notes
 
-    struct note* unionList = NULL;
-    
+    struct note *unionList = NULL;
+    struct note *note1 = *noteList1;
+    struct note *note2 = *noteList2;
+
+    while (note1 != NULL)
+    {
+        struct note *new_note = malloc(sizeof(struct note));
+
+        new_note->content = note1->content;
+        new_note->id = note1->id;
+        new_note->next = NULL;
+
+        sortedInsert(&unionList, new_note);
+        note1 = note1->next;
+    }
+
+    while (note2 != NULL)
+    {
+
+        if (isContainsNote(unionList, note2->id) == 0)
+        {
+            struct note *new_note = malloc(sizeof(struct note));
+
+            new_note->content = note2->content;
+            new_note->id = note2->id;
+            new_note->next = NULL;
+
+            sortedInsert(&unionList, new_note);
+        }
+        note2 = note2->next;
+    }
+
+    return unionList;
 }
 
 void displaySingleLine(struct note *a_note)
@@ -596,6 +689,25 @@ int isContainsTag(struct note *note, char *tag_name)
     for (iter = note->tagList; iter != NULL; iter = iter->next)
     {
         if (strcmp(iter->name, tag_name) == 0)
+        {
+            isContains = 1;
+            break;
+        }
+    }
+
+    return isContains;
+}
+
+int isContainsNote(struct note *note, int id)
+{
+
+    int isContains = 0;
+
+    struct note *iter;
+
+    for (iter = note; iter != NULL; iter = iter->next)
+    {
+        if (iter->id == id)
         {
             isContains = 1;
             break;

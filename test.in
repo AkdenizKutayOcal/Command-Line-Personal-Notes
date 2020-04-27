@@ -1,3 +1,9 @@
+ADD 40
+Problems with pointers
+----------------------
+1. dangling pointers
+2. memory leaks 
+END
 ADD 3
 Things todo for the 326 Hw !
  * review dynamic memory allocation
@@ -16,19 +22,15 @@ ADD 20
 END
 TAG todo 20 -1
 TAG urgent 3 -1
-FIND AND( NOT( todo ) )
+TAG pointer 40 -1
+FIND AND( NOT( work ) OR( todo fun ) fun )
 
 FIND AND( work fun other )
 DISPLAY 3
 FIND AND( NOT( work ) OR( TODO fun ) )
 
-ADD 40
-Problems with pointers
-----------------------
-1. dangling pointers
-2. memory leaks 
-END
-TAG pointer 40 -1
+
+
 TAG 426 40 -1
 TAG work 40 -1
 TAG new 20 40 -1
