@@ -1,9 +1,6 @@
 // TODO
-// AND method
-// OR method
-// NOT method
-// intersect method
-// union method
+// last line problem
+// does not read the last char
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -100,6 +97,7 @@ void insertToTagList();
 void printTagList();
 int isContainsTag();
 int isContainsNote();
+void displaySingleLine();
 
 // Stack functions
 struct stack_t *newStack(void);
@@ -120,9 +118,9 @@ int main(int argc, char *argv[])
 {
     fp = fopen("test.in", "r");
     char input[MAX_LINE_LENGTH];
-    //fgets(input, sizeof(input), stdin);
-    fgets(input, sizeof(input), fp);
-    input[strlen(input) - 1] = 0;
+    fgets(input, sizeof(input), stdin);
+    //fgets(input, sizeof(input), fp);
+    input[strlen(input)-1] = 0;
     noteList = NULL;
 
     while (strcmp(input, "<EOF>") != 0)
@@ -134,12 +132,10 @@ int main(int argc, char *argv[])
         }
 
         processCommand(input);
-        /*  printf("------------------------\n");
-        printNoteList(noteList);
-        printf("------------------------\n"); */
 
-        fgets(input, sizeof(input), fp);
-        input[strlen(input) - 1] = 0;
+        fgets(input, sizeof(input), stdin);
+        //fgets(input, sizeof(input), fp);
+        input[strlen(input)-1] = 0;
     }
 
     fclose(fp);
@@ -175,7 +171,8 @@ void processCommand(char *input)
 
         char input[MAX_LINE_LENGTH];
 
-        fgets(input, sizeof(input), fp);
+        //fgets(input, sizeof(input), fp);
+        fgets(input, sizeof(input), stdin);
         input[strlen(input) - 1] = 0;
 
         while (strcmp(input, "END") != 0)
@@ -184,7 +181,8 @@ void processCommand(char *input)
             //printf("----%s----\n",content);
             strcat(content, "\n");
 
-            fgets(input, sizeof(input), fp);
+            //fgets(input, sizeof(input), fp);
+            fgets(input, sizeof(input), stdin);
             input[strlen(input) - 1] = 0;
         }
 
@@ -241,7 +239,7 @@ void processCommand(char *input)
         struct note *alterList[50];
         char *tempArr[50];
         numberOfLists = 0;
-
+        //printf("%d==\n",numberOfArgs);
         for (int i = 1; i < numberOfArgs; i++)
         {
 
@@ -249,7 +247,6 @@ void processCommand(char *input)
             {
 
                 push(theStack, commandArgs[i]);
-                printf("%s pushed into stack \n", commandArgs[i]);
             }
             else
             {
@@ -257,54 +254,57 @@ void processCommand(char *input)
                 char *str = malloc(sizeof(char) * MAX_TAG_LENGTH);
 
                 str = top(theStack);
-                printf("str = %s\n", str);
 
                 while (strcmp(str, "AND(") != 0 && strcmp(str, "NOT(") != 0 && strcmp(str, "OR(") != 0)
                 {
-                    printf("geldim\n");
 
                     tempArr[numTags] = malloc(sizeof(char) * MAX_TAG_LENGTH);
                     strcpy(tempArr[numTags++], str);
                     pop(theStack);
 
                     str = top(theStack);
-                    printf("sa");
-                    printf("str = %s\n", str);
                 }
 
                 if (strcmp(str, "AND(") == 0)
                 {
                     //AND METHOD CALL
-                    printf("AND\n");
+                    //printf("AND\n");
                     struct note *list = and(&noteList, alterList, tempArr, numTags);
                     alterList[numberOfLists - 1] = list;
-                    printNoteList(alterList[numberOfLists - 1]);
+                    //printNoteList(alterList[numberOfLists - 1]);
                 }
 
                 else if (strcmp(str, "NOT(") == 0)
                 {
                     //NOT METHOD CALL
-                    printf("NOT\n");
+                    //printf("NOT\n");
 
                     struct note *list = not(&noteList, alterList, tempArr, numTags);
                     alterList[numberOfLists - 1] = list;
-                    printNoteList(alterList[numberOfLists - 1]);
+                    //printNoteList(alterList[numberOfLists - 1]);
                 }
 
                 else if (strcmp(str, "OR(") == 0)
                 {
                     //OR METHOD CALL
-                    printf("OR\n");
-                    printf("NUMBEROFLISTS %d\n", numberOfLists);
+                    //printf("OR\n");
+                    //printf("NUMBEROFLISTS %d\n", numberOfLists);
                     struct note *list = or (&noteList, alterList, tempArr, numTags);
                     alterList[numberOfLists - 1] = list;
-                    printNoteList(alterList[numberOfLists - 1]);
+                    //printNoteList(alterList[numberOfLists - 1]);
                 }
 
                 pop(theStack);
                 push(theStack, "nested");
             }
         }
+        //displaySingleLine(alterList[0]);
+        //printf("=================\n");
+        /* printf("%d\n",numberOfLists);
+        
+        printf("\n=================\n"); */
+        displaySingleLine(alterList[0]);
+        //printNoteList(alterList[0]);
     }
 }
 
@@ -315,7 +315,7 @@ struct note * and (struct note * *noteList, struct note *alterList[], char *temp
 
     for (int i = 0; i < numberOfTags; i++)
     {
-
+        //printf("--%s--\n",tempArray[i]);
         if (strcmp(tempArray[i], "nested") == 0)
         {
             if (andList == NULL)
@@ -326,7 +326,7 @@ struct note * and (struct note * *noteList, struct note *alterList[], char *temp
 
             else
             {
-                andList = intersect(&andList,&alterList[numberOfLists-1]);
+                andList = intersect(&andList, &alterList[numberOfLists - 1]);
                 numberOfLists--;
             }
         }
@@ -379,8 +379,8 @@ struct note * and (struct note * *noteList, struct note *alterList[], char *temp
                         sortedInsert(&notesWithTag, new_note);
                     }
                 }
-
-                andList = intersect(&andList,&notesWithTag);
+                
+                andList = intersect(&andList, &notesWithTag);
             }
         }
     }
@@ -420,13 +420,11 @@ struct note * not(struct note * *noteList, struct note *alterList[], char *tempA
                 new_note->id = iter_noteList->id;
                 new_note->next = NULL;
 
-                printf("\n%s", new_note->content);
+                //printf("\n%s", new_note->content);
 
                 sortedInsert(&notList, new_note);
             }
         }
-
-        printf("========================================");
 
         return notList;
     }
@@ -437,7 +435,7 @@ struct note * not(struct note * *noteList, struct note *alterList[], char *tempA
 
         for (iter_note = *noteList; iter_note != NULL; iter_note = iter_note->next)
         {
-            printf("id: %d %d\n", iter_note->id, isContainsTag(iter_note, tempArray[0]));
+            //printf("id: %d %d\n", iter_note->id, isContainsTag(iter_note, tempArray[0]));
 
             if (isContainsTag(iter_note, tempArray[0]) == 0)
             {
@@ -447,12 +445,11 @@ struct note * not(struct note * *noteList, struct note *alterList[], char *tempA
                 new_note->id = iter_note->id;
                 new_note->next = NULL;
 
-                printf("\n%s", new_note->content);
+                //printf("\n%s", new_note->content);
 
                 sortedInsert(&notList, new_note);
             }
         }
-        printf("========================================");
 
         numberOfLists++;
         return notList;
@@ -479,7 +476,7 @@ struct note * or (struct note * *noteList, struct note *alterList[], char *tempA
 
             for (iter_note = *noteList; iter_note != NULL; iter_note = iter_note->next)
             {
-                printf("id: %d %d\n", iter_note->id, isContainsTag(iter_note, tempArray[i]));
+                //printf("id: %d %d\n", iter_note->id, isContainsTag(iter_note, tempArray[i]));
 
                 if (isContainsTag(iter_note, tempArray[i]) == 1)
                 {
@@ -489,7 +486,7 @@ struct note * or (struct note * *noteList, struct note *alterList[], char *tempA
                     new_note->id = iter_note->id;
                     new_note->next = NULL;
 
-                    printf("\n%s", new_note->content);
+                    //printf("\n%s", new_note->content);
 
                     sortedInsert(&notesWithTag, new_note);
                 }
@@ -570,8 +567,27 @@ struct note *unionOf(struct note **noteList1, struct note **noteList2)
 
 void displaySingleLine(struct note *a_note)
 {
-    for (int i = 0; i < strlen(a_note->content); i++)
+    struct note *temp = a_note;
+
+    printf("Results:\n");
+
+    while (temp != NULL)
     {
+        printf("Id: %d ", temp->id);
+        for (int i = 0; i < strlen(temp->content); i++)
+        {
+            if ((temp->content)[i] == '\n')
+            {
+                printf("\n");
+                break;
+            }
+            else{
+                printf("%c", (temp->content)[i]);
+            }
+            
+        }
+        
+        temp = temp->next;
     }
 }
 void printNoteList(struct note *noteList)
@@ -719,7 +735,6 @@ int isContainsNote(struct note *note, int id)
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 // Stack Operators
-// Taken from : https://stackoverflow.com/questions/1919975/creating-a-stack-of-strings-in-c
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -738,8 +753,6 @@ struct stack_t *newStack(void)
 
 /**
  * Make a copy of the string to be stored (assumes  
- * strdup() or similar functionality is not
- * available
  */
 char *copyString(char *str)
 {
