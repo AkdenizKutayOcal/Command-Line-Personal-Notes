@@ -61,5 +61,5 @@ FIND :  This command is used to find notes according to a tag expression.
 
 3- Known bugs or problems:
 
---> No input error checks are done since it was not required in a assignment. Therefore user
-    has to write correct commands or the program will not work as needed.
+    No input error checks are done since it was not required in the assignment. Therefore user
+    has to write correct commands or the program will not work as intended.
