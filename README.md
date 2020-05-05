@@ -3,9 +3,6 @@
 This project is made by Akdeniz Kutay Ocal for the CMPE_326 course.
 
 1-Design Overview:
-Project is designed to be a basic Command Line Text Editor program which is written
-
-
 Project is designed to be a basic Command Line Program that is written in C that 
 manages your personal notes with tags. Using the program, you can not only enter 
 your notes, but also tag them for a better organization. You can search your notes
