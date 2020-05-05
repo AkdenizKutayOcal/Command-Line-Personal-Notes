@@ -41,4 +41,3 @@ Vacation: Azores
 END
 TAG flight 60 -1
 FIND AND( flight NOT( work ) )
-DISPLAY 60
